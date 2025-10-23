@@ -1,0 +1,39 @@
+/* public/css/style.css (KODE YANG BENAR) */
+
+/* --- Style Halaman Login --- */
+/* Kita gunakan kelas 'body-login' yang spesifik */
+body.body-login { 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f8f9fa; /* Warna bg-light */
+}
+
+.login-card {
+    max-width: 420px;
+    width: 100%;
+}
+
+/* --- Style Halaman Dashboard --- */
+/* Kita gunakan kelas 'body-dashboard' yang spesifik */
+body.body-dashboard {
+    padding-bottom: 3rem;
+    background-color: #f8f9fa; /* Warna bg-light */
+}
+
+/* Style Kartu Dashboard (Tidak berubah) */
+.card {
+    border: none; 
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+}
+
+#dht-chart {
+    max-height: 400px;
+    width: 100% !important;
+}

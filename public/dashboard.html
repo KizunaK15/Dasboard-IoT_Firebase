@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - IoT Monitoring</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .gauge-container { 
+            position: relative;
+            height: 200px; 
+            margin: auto;
+        }
+        .gauge-text { 
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="body-dashboard">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-tachometer-alt"></i> IoT Dashboard
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-secondary" id="status-indicator">
+                    <i class="fas fa-circle" id="status-icon"></i> 
+                    <span id="status-text">Connecting...</span>
+                </span>
+                <button class="btn btn-outline-light ms-3" id="logout-button">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="alert-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong class="me-auto">Peringatan Sensor</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-body">
+                Isi pesan peringatan.
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm text-center" id="temp-card">
+                    <div class="card-header bg-primary text-white fs-5">
+                        <i class="fas fa-thermometer-half"></i> Suhu (Temperature)
+                    </div>
+                    <div class="card-body">
+                        <h1 class="display-4" id="temp-value">-- °C</h1>
+                        <p class="card-text text-muted">Data terakhir diterima</p>
+                        <p class="card-text" id="temp-timestamp">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-header bg-info text-white fs-5">
+                        <i class="fas fa-tint"></i> Kelembaban (Humidity)
+                    </div>
+                    <div class="card-body">
+                        <div class="gauge-container">
+                            <canvas id="humidity-gauge"></canvas>
+                            <div id="hum-value" class="gauge-text">-- %</div>
+                        </div>
+                        <p class="card-text text-muted mt-3">Data terakhir diterima</p>
+                        <p class="card-text" id="hum-timestamp">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-chart-line"></i> Riwayat Data Sensor</span>
+                            <div class="d-flex" style="max-width: 400px;"> <input type="date" class="form-control form-control-sm" id="date-picker">
+                                <button class="btn btn-sm btn-outline-secondary ms-2" id="reset-chart-btn" title="Kembali ke Real-time">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                
+                                <button class="btn btn-sm btn-outline-success ms-2" id="export-csv-btn" title="Export CSV">
+                                    <i class="fas fa-file-download"></i>
+                                </button>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center d-none" id="chart-loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Memuat data historis...</p>
+                        </div>
+                        <canvas id="dht-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
+    
+    <script type="module" src="js/dashboard.js"></script>
+
+</body>
+</html>
