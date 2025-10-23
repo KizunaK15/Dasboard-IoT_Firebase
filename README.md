@@ -3,7 +3,6 @@
 Selamat datang di proyek Dashboard IoT saya! Ini adalah aplikasi web lengkap yang dibuat dari awal untuk memantau data sensor (suhu dan kelembaban) secara langsung dari mana saja di dunia.
 
 ### [➡️ Coba Versi Live Di Sini! ⬅️](https://trial-data-f9065.web.app)
-*(Jangan lupa ganti `trial-data-f9065.web.app` dengan URL Firebase Anda yang sebenarnya)*
 
 ---
 
