@@ -1,46 +1,65 @@
-# Proyek Dashboard IoT (Suhu & Kelembaban)
+# 📊 Dashboard IoT Pemantau Suhu & Kelembaban (Real-time)
 
-Ini adalah proyek web dashboard IoT lengkap yang melacak data sensor (Suhu & Kelembaban) secara real-time menggunakan Firebase dan ESP32.
+Selamat datang di proyek Dashboard IoT saya! Ini adalah aplikasi web lengkap yang dibuat dari awal untuk memantau data sensor (suhu dan kelembaban) secara langsung dari mana saja di dunia.
 
-## Fitur
-* Login dan Registrasi Pengguna (Firebase Auth)
-* Dashboard Real-time dengan Gauge & Line Chart (Chart.js)
-* Indikator Status Online/Offline Perangkat
-* Fitur "Lupa Password"
-* Kueri Data Historis (Pilih Tanggal)
-* Ekspor Data ke CSV
+### [➡️ Coba Versi Live Di Sini! ⬅️](https://trial-data-f9065.web.app)
+*(Jangan lupa ganti `trial-data-f9065.web.app` dengan URL Firebase Anda yang sebenarnya)*
 
-## Teknologi yang Digunakan
-* **Frontend:** HTML5, CSS3, JavaScript (ES6 Modules)
-* **Framework/Library:** Bootstrap 5, Chart.js
-* **Backend:** Firebase Authentication, Firebase Realtime Database
-* **Perangkat Keras:** ESP32 (mengirim data dummy)
+---
 
-## Instalasi & Setup
+## ✨ Fitur Unggulan
 
-1.  **Clone repositori ini:**
-    ```bash
-    git clone [https://github.com/NAMA-ANDA/NAMA-REPO-ANDA.git](https://github.com/NAMA-ANDA/NAMA-REPO-ANDA.git)
-    ```
+Proyek ini bukan hanya sekadar "tampilan" data, tapi sebuah aplikasi yang fungsional penuh:
 
-2.  **Setup Kredensial Firebase:**
-    * Buka folder `public/js/`.
-    * Ganti nama file `firebase-config.example.js` menjadi `firebase-config.js`.
-    * Buka `firebase-config.js` dan isi semua nilai `firebaseConfig` dengan kredensial dari proyek Firebase Anda.
+* 🔐 **Sistem Autentikasi Lengkap:** Pengguna dapat **Daftar**, **Login**, **Logout**, dan bahkan **Reset Password** jika lupa.
+* 📈 **Dashboard Interaktif:** Menampilkan data *real-time* dengan *gauge chart* yang cantik dan *line chart* untuk riwayat data.
+* 🟢 **Status Perangkat:** Indikator "Online / Offline" yang cerdas memberi tahu Anda jika perangkat sensor tiba-tiba berhenti mengirim data.
+* 🔔 **Sistem Peringatan (Alert):** Dashboard akan secara proaktif memberi tahu Anda dengan notifikasi *pop-up* (toast) jika suhu melebihi ambang batas aman.
+* 📅 **Analisis Data Historis:** Pengguna dapat memilih tanggal di masa lalu untuk memuat dan menganalisis data historis di dalam grafik.
+* 📄 **Ekspor ke CSV:** Unduh data historis apa pun yang ada di grafik Anda ke dalam format `.csv` untuk dianalisis lebih lanjut di Excel atau Google Sheets.
 
-3.  **Setup Aturan Database:**
-    * Di Firebase Realtime Database, buka tab "Rules" dan tambahkan indeks `.indexOn` untuk *timestamp* agar kueri historis berfungsi:
-    ```json
-    {
-      "rules": {
-        ".read": "auth != null",
-        ".write": "auth != null",
-        "dht11_data": {
-          ".indexOn": "timestamp"
-        }
-      }
-    }
-    ```
+---
 
-4.  **Deploy ke Firebase Hosting:**
-    * Jalankan `firebase deploy` untuk menghosting aplikasi web Anda.
+## 📸 Tampilan Aplikasi
+
+Berikut adalah tampilan dari aplikasi yang sedang berjalan.
+
+| Halaman Login | Halaman Dashboard |
+| :---: | :---: |
+| ![Tampilan Halaman Login](httpsEXAMPLE_IMAGE_URL/login.png) | ![Tampilan Halaman Dashboard](httpsEXAMPLE_IMAGE_URL/dashboard.png) |
+| *Fitur: Login, Daftar, Lupa Password & Validasi* | *Fitur: Real-time, Gauge, Grafik, Peringatan & Kueri Historis* |
+
+**Tips:** Untuk membuatnya lebih menarik, ganti gambar di atas dengan *screenshot* proyek Anda sendiri! (Unggah *screenshot* Anda ke tab "Issues" di GitHub untuk mendapatkan URL gambar).
+
+---
+
+## 🔧 Bagaimana Cara Kerjanya? (Arsitektur)
+
+Proyek ini terbagi menjadi tiga bagian utama yang saling berkomunikasi:
+
+1.  🧠 **Perangkat Keras (Si Pengirim):**
+    * Sebuah mikrokontroler **ESP32** (di-program dengan C++/Arduino).
+    * Bertugas mengirimkan data (dalam contoh ini, data *dummy* acak) ke Firebase setiap 5 detik.
+
+2.  ☁️ **Backend (Si Penyimpan & Pengatur):**
+    * **Firebase Realtime Database:** Menerima dan menyimpan data sensor.
+    * **Firebase Authentication:** Mengelola semua data login pengguna dengan aman.
+    * **Firebase Hosting:** Menjalankan aplikasi web kita agar bisa diakses di seluruh dunia.
+
+3.  🖥️ **Frontend (Si Penampil):**
+    * Sebuah aplikasi web statis yang dibuat dengan **HTML**, **CSS**, dan **JavaScript (ES6 Modules)**.
+    * Menggunakan **Bootstrap 5** untuk tampilan yang bersih dan responsif.
+    * Menggunakan **Chart.js** untuk membuat semua grafik yang interaktif.
+
+
+
+---
+
+## 💻 Untuk Rekan Developer (Cara Instalasi)
+
+Ingin menjalankan proyek ini di komputer Anda? Ikuti langkah-langkah ini:
+
+### 1. Dapatkan Kodenya (Clone)
+```bash
+git clone [https://github.com/NAMA-ANDA/NAMA-REPO-ANDA.git](https://github.com/NAMA-ANDA/NAMA-REPO-ANDA.git)
+cd NAMA-REPO-ANDA
