@@ -26,7 +26,7 @@ Berikut adalah tampilan dari aplikasi yang sedang berjalan.
 
 | Halaman Login | Halaman Dashboard |
 | :---: | :---: |
-| ![Tampilan Halaman Login](httpsEXAMPLE_IMAGE_URL/login.png) | ![Tampilan Halaman Dashboard](httpsEXAMPLE_IMAGE_URL/dashboard.png) |
+| ![Tampilan Halaman Login](https://github.com/user-attachments/assets/eeb6c95b-b3fc-4aba-9746-36217dd0e87c) | ![Tampilan Halaman Dashboard](https://github.com/user-attachments/assets/98dc0dcf-95e1-4c5a-ad2e-654a3a43d27b) |
 | *Fitur: Login, Daftar, Lupa Password & Validasi* | *Fitur: Real-time, Gauge, Grafik, Peringatan & Kueri Historis* |
 
 **Tips:** Untuk membuatnya lebih menarik, ganti gambar di atas dengan *screenshot* proyek Anda sendiri! (Unggah *screenshot* Anda ke tab "Issues" di GitHub untuk mendapatkan URL gambar).
