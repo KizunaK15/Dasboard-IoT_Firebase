@@ -1,5 +1,4 @@
-// public/js/dashboard.js (LENGKAP dengan Fitur 1, 3, dan Export CSV)
-
+// Import konfigurasi Firebase
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 import { 
@@ -23,10 +22,8 @@ const toastEl = document.getElementById('alert-toast');
 const toastBody = document.getElementById('toast-body');
 const datePicker = document.getElementById('date-picker');
 const resetChartBtn = document.getElementById('reset-chart-btn');
-const chartLoading = document.getElementById('chart-loading');
-
-// --- PERUBAHAN BARU: Elemen DOM Fitur Export CSV ---
 const exportCsvBtn = document.getElementById('export-csv-btn');
+const chartLoading = document.getElementById('chart-loading');
 
 // --- Variabel Global ---
 let dhtLineChart;
@@ -35,41 +32,256 @@ let dataTimer;
 let alertToast;
 let realtimeListener = null; 
 const MAX_DATA_POINTS = 20;
-const SUHU_MAKSIMAL = 30.0; 
+const SUHU_MAKSIMAL = 40.0; 
 
-// --- Inisialisasi Chart (Tidak berubah) ---
-function initializeGaugeChart() { /* ... (Kode sama persis) ... */ 
+// --- Inisialisasi Gauge Chart ---
+function initializeGaugeChart() {
     humidityGaugeChart = new Chart(gaugeChartCanvas, {
-        type: 'doughnut', data: { labels: ['Kelembaban', 'Sisa'], datasets: [{ data: [0, 100], backgroundColor: ['rgba(54, 162, 235, 1)', 'rgba(230, 230, 230, 1)'], borderColor: ['rgba(54, 162, 235, 1)', 'rgba(230, 230, 230, 1)'], borderWidth: 1 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, circumference: 180, rotation: 270, cutout: '70%' }
-    });
-}
-function initializeLineChart() { /* ... (Kode sama persis) ... */ 
-    dhtLineChart = new Chart(lineChartCanvas, {
-        type: 'line', data: { labels: [], datasets: [ { label: 'Suhu (°C)', data: [], borderColor: 'rgba(255, 99, 132, 1)', backgroundColor: 'rgba(255, 99, 132, 0.2)', borderWidth: 2, fill: false, yAxisID: 'y-temp' }, { label: 'Kelembaban (%)', data: [], borderColor: 'rgba(54, 162, 235, 1)', backgroundColor: 'rgba(54, 162, 235, 0.2)', borderWidth: 2, fill: false, yAxisID: 'y-hum' } ] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'time', time: { unit: 'second', tooltipFormat: 'HH:mm:ss', displayFormats: { second: 'HH:mm:ss' } }, title: { display: true, text: 'Waktu' } }, 'y-temp': { type: 'linear', position: 'left', title: { display: true, text: 'Suhu (°C)' }, ticks: { color: 'rgba(255, 99, 132, 1)' } }, 'y-hum': { type: 'linear', position: 'right', title: { display: true, text: 'Kelembaban (%)' }, ticks: { color: 'rgba(54, 162, 235, 1)' }, grid: { drawOnChartArea: false } } }, plugins: { tooltip: { mode: 'index', intersect: false } } }
+        type: 'doughnut',
+        data: {
+            labels: ['Kelembaban', 'Sisa'],
+            datasets: [{
+                data: [0, 100],
+                backgroundColor: ['rgba(54, 162, 235, 1)', 'rgba(230, 230, 230, 1)'],
+                borderColor: ['rgba(54, 162, 235, 1)', 'rgba(230, 230, 230, 1)'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false }
+            },
+            circumference: 180,
+            rotation: 270,
+            cutout: '70%'
+        }
     });
 }
 
-// --- Fungsi Status & UI (Tidak berubah) ---
-function setDeviceStatus(isOnline) { /* ... (Kode sama persis) ... */ 
+// --- Inisialisasi Line Chart ---
+function initializeLineChart() {
+    dhtLineChart = new Chart(lineChartCanvas, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Suhu (°C)',
+                    data: [],
+                    borderColor: '#FF6B6B',
+                    backgroundColor: '#FF6B6B',
+                    borderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#FF6B6B',
+                    pointBorderColor: '#FFFFFF',
+                    pointBorderWidth: 2,
+                    fill: false,
+                    yAxisID: 'y-temp',
+                    tension: 0,
+                    showLine: true
+                },
+                {
+                    label: 'Kelembaban (%)',
+                    data: [],
+                    borderColor: '#4ECDC4',
+                    backgroundColor: '#4ECDC4',
+                    borderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#4ECDC4',
+                    pointBorderColor: '#FFFFFF',
+                    pointBorderWidth: 2,
+                    fill: false,
+                    yAxisID: 'y-hum',
+                    tension: 0,
+                    showLine: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'minute',
+                        tooltipFormat: 'DD MMM YYYY HH:mm:ss',
+                        displayFormats: {
+                            second: 'HH:mm:ss',
+                            minute: 'HH:mm',
+                            hour: 'HH:mm'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Waktu',
+                        font: { size: 13, weight: 'bold' }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        font: { size: 12 }
+                    }
+                },
+                'y-temp': {
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Suhu (°C)',
+                        font: { size: 13, color: '#FF6B6B' }
+                    },
+                    ticks: {
+                        color: '#FF6B6B',
+                        callback: function(value) { return value + '°C'; },
+                        font: { size: 12 }
+                    },
+                    grid: {
+                        color: 'rgba(255, 107, 107, 0.1)'
+                    }
+                },
+                'y-hum': {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Kelembaban (%)',
+                        font: { size: 13, color: '#4ECDC4' }
+                    },
+                    ticks: {
+                        color: '#4ECDC4',
+                        callback: function(value) { return value + '%'; },
+                        font: { size: 12 }
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'start',
+                    labels: {
+                        usePointStyle: true,
+                        font: { size: 13 },
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    enabled: false
+                },
+                annotation: {
+                    annotations: []
+                }
+            }
+        }
+    });
+}
+
+// --- Update Annotation (Label Nilai di Titik) ---
+function updateChartAnnotations() {
+    if (!dhtLineChart) return;
+
+    const datasets = dhtLineChart.data.datasets;
+    const labels = dhtLineChart.data.labels;
+
+    const annotations = [];
+
+    datasets.forEach((dataset, dsIndex) => {
+        dataset.data.forEach((value, index) => {
+            if (value == null || value === undefined) return;
+
+            const x = labels[index];
+            const y = parseFloat(value);
+
+            // Tentukan warna dan teks label berdasarkan dataset
+            const labelColor = dsIndex === 0 ? '#FF6B6B' : '#4ECDC4';
+            const labelText = dsIndex === 0 
+                ? `${y.toFixed(1)}°C` 
+                : `${y.toFixed(1)}%`;
+
+            // Hitung penyesuaian vertikal (yAdjust) secara dinamis
+            // Untuk suhu (dsIndex 0), letakkan label di atas titik
+            // Untuk kelembaban (dsIndex 1), letakkan label di bawah titik
+            // Ini akan mencegah tumpang tindih jika kedua nilai hampir sama
+            let yAdjust = -12; // default: di atas titik
+
+            if (dsIndex === 1) { // Kelembaban
+                yAdjust = 15;   // di bawah titik
+            }
+
+            // Jika nilai sangat tinggi/rendah, sesuaikan juga agar tidak keluar dari canvas
+            // Ini opsional, tapi membantu di skenario ekstrem
+            // if (y > 80 && dsIndex === 0) yAdjust = -20; // Suhu tinggi, tarik lebih ke atas
+            // if (y < 10 && dsIndex === 1) yAdjust = 10;  // Kelembaban rendah, tarik lebih ke bawah
+
+            annotations.push({
+                type: 'label',
+                xValue: x,
+                yValue: y,
+                content: labelText,
+                color: labelColor,
+                font: {
+                    size: 12,
+                    weight: 'bold'
+                },
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                borderColor: labelColor,
+                borderWidth: 1,
+                borderRadius: 4,
+                padding: 4,
+                position: 'top', // Tetap gunakan 'top' sebagai basis, kita atur dengan yAdjust
+                yAdjust: yAdjust // Penyesuaian vertikal
+            });
+        });
+    });
+
+    dhtLineChart.options.plugins.annotation.annotations = annotations;
+    dhtLineChart.update();
+}
+
+// --- Fungsi Status Perangkat ---
+function setDeviceStatus(isOnline) {
+    if (isOnline === "connecting") {
+        statusIndicator.classList.remove('bg-success', 'bg-danger');
+        statusIndicator.classList.add('bg-secondary');
+        statusIcon.className = 'fas fa-circle fa-spin';
+        statusText.textContent = 'Menghubungkan...';
+        return;
+    }
+
     if (isOnline) {
-        statusIndicator.classList.remove('bg-danger', 'bg-secondary'); statusIndicator.classList.add('bg-success');
-        statusIcon.classList.remove('fa-spin'); statusText.textContent = 'Online';
+        statusIndicator.classList.remove('bg-danger', 'bg-secondary');
+        statusIndicator.classList.add('bg-success');
+        statusIcon.className = 'fas fa-circle';
+        statusText.textContent = 'Online';
         clearTimeout(dataTimer);
-        dataTimer = setTimeout(() => { setDeviceStatus(false); }, 15000); 
+        dataTimer = setTimeout(() => setDeviceStatus(false), 15000);
     } else {
-        statusIndicator.classList.remove('bg-success', 'bg-secondary'); statusIndicator.classList.add('bg-danger');
+        statusIndicator.classList.remove('bg-success', 'bg-secondary');
+        statusIndicator.classList.add('bg-danger');
         statusText.textContent = 'Offline';
     }
 }
 
-function updateDashboardUI(data) { /* ... (Kode sama persis, termasuk fitur Notifikasi) ... */ 
+// --- Update UI Dashboard ---
+function updateDashboardUI(data) {
     const temp = parseFloat(data.temperature);
     const hum = parseFloat(data.humidity);
 
     if (!isNaN(temp) && !isNaN(hum)) {
-        setDeviceStatus(true); 
+        setDeviceStatus(true);
         const timestamp = new Date(data.timestamp || Date.now());
         const formattedDateTime = timestamp.toLocaleString('id-ID');
 
@@ -84,8 +296,9 @@ function updateDashboardUI(data) { /* ... (Kode sama persis, termasuk fitur Noti
             tempCard.classList.remove('bg-danger', 'text-white');
         }
 
-        humValue.textContent = `${hum.toFixed(1)} %`; 
+        humValue.textContent = `${hum.toFixed(1)} %`;
         humTimestamp.textContent = `Pukul ${formattedDateTime}`;
+
         if (humidityGaugeChart) {
             humidityGaugeChart.data.datasets[0].data = [hum, 100 - hum];
             humidityGaugeChart.update();
@@ -101,92 +314,90 @@ function updateDashboardUI(data) { /* ... (Kode sama persis, termasuk fitur Noti
                 dhtLineChart.data.datasets[0].data.shift();
                 dhtLineChart.data.datasets[1].data.shift();
             }
+
             dhtLineChart.update();
+            updateChartAnnotations();
         }
     } else {
-        console.warn("Data diterima tapi formatnya salah:", data);
+        console.warn("Data tidak valid:", data);
     }
 }
 
-// --- Logika Firebase ---
-
-// 1. Cek Status Autentikasi (DIMODIFIKASI)
+// --- Listener Autentikasi ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("User terautentikasi:", user.uid);
         initializeLineChart();
-        initializeGaugeChart(); 
-        
+        initializeGaugeChart();
         alertToast = new bootstrap.Toast(toastEl);
-        
-        // Tambahkan listener ke elemen UI
+
         datePicker.addEventListener('change', handleDateChange);
         resetChartBtn.addEventListener('click', resetToRealtime);
-        
-        // --- PERUBAHAN BARU: Tambahkan listener untuk tombol export ---
         exportCsvBtn.addEventListener('click', exportDataToCSV);
 
         startRealtimeListener();
     } else {
-        console.log("User tidak terautentikasi, kembali ke login.");
         window.location.href = 'index.html';
     }
 });
 
-// 2. Fungsi Logout (Tidak Berubah)
-logoutButton.addEventListener('click', () => { /* ... (Kode sama persis) ... */ 
-    signOut(auth).then(() => { console.log("Logout berhasil."); })
-    .catch((error) => { console.error("Error logout:", error); });
+// --- Logout ---
+logoutButton.addEventListener('click', () => {
+    signOut(auth).catch(console.error);
 });
 
-// 3. Fungsi Listener Real-time (Tidak Berubah)
-function startRealtimeListener() { /* ... (Kode sama persis) ... */ 
-    console.log("Memulai listener real-time...");
-    setDeviceStatus("connecting"); 
-    const dhtDataRef = ref(db, 'dht11_data');
-    const recentDataQuery = query(dhtDataRef, limitToLast(1));
-    realtimeListener = onValue(recentDataQuery, (snapshot) => {
+// --- Real-time Listener ---
+function startRealtimeListener() {
+    console.log("Memulai listener real-time dari 'dht11_data'...");
+    setDeviceStatus("connecting");
+
+    const dhtRealtimeRef = query(ref(db, 'dht11_data'), limitToLast(1));
+    realtimeListener = onValue(dhtRealtimeRef, (snapshot) => {
         if (snapshot.exists()) {
-            const data = snapshot.val();
-            const latestKey = Object.keys(data)[0];
-            updateDashboardUI(data[latestKey]);
+            const entries = snapshot.val();
+            const lastKey = Object.keys(entries).pop();
+            const data = entries[lastKey];
+
+            if (data?.temperature !== undefined && data?.humidity !== undefined) {
+                updateDashboardUI(data);
+            } else {
+                console.warn("Data format salah:", data);
+                setDeviceStatus(false);
+            }
         } else {
-            setDeviceStatus(false); 
+            console.warn("Tidak ada data.");
+            setDeviceStatus(false);
         }
     }, (error) => {
-        console.error("Error membaca data:", error);
-        setDeviceStatus(false); 
+        console.error("Error real-time:", error);
+        setDeviceStatus(false);
     });
 }
 
-// 4. Fungsi Stop Listener (Tidak Berubah)
-function stopRealtimeListener() { /* ... (Kode sama persis) ... */ 
+// --- Hentikan Real-time ---
+function stopRealtimeListener() {
     if (realtimeListener) {
-        console.log("Menghentikan listener real-time.");
-        realtimeListener(); 
+        realtimeListener();
         realtimeListener = null;
-        setDeviceStatus(false); 
+        setDeviceStatus(false);
     }
 }
 
-// 5. Fungsi Ambil Data Historis (Tidak Berubah)
-function handleDateChange() { /* ... (Kode sama persis) ... */ 
+// --- Ambil Data Historis ---
+function handleDateChange() {
     const dateValue = datePicker.value;
-    if (!dateValue) return; 
+    if (!dateValue) return;
 
-    console.log(`Meminta data historis untuk: ${dateValue}`);
-    stopRealtimeListener(); 
-
+    stopRealtimeListener();
     chartLoading.classList.remove('d-none');
     dhtLineChart.canvas.style.display = 'none';
 
-    const startOfDay = new Date(dateValue).setHours(0, 0, 0, 0);
-    const endOfDay = new Date(dateValue).setHours(23, 59, 59, 999);
+    const startOfDay = new Date(dateValue + 'T00:00:00.000Z').getTime();
+    const endOfDay = new Date(dateValue + 'T23:59:59.999Z').getTime();
 
-    const dhtDataRef = ref(db, 'dht11_data');
     const historicalQuery = query(
-        dhtDataRef,
-        orderByChild('timestamp'), 
+        ref(db, 'dht11_data'),
+        orderByChild('timestamp'),
         startAt(startOfDay),
         endAt(endOfDay)
     );
@@ -197,111 +408,87 @@ function handleDateChange() { /* ... (Kode sama persis) ... */
         dhtLineChart.data.datasets[1].data = [];
 
         if (snapshot.exists()) {
-            console.log(`Ditemukan ${snapshot.size} data historis.`);
-            snapshot.forEach((childSnapshot) => {
-                const data = childSnapshot.val();
-                if (data.timestamp && data.temperature && data.humidity) {
-                    dhtLineChart.data.labels.push(new Date(data.timestamp));
-                    dhtLineChart.data.datasets[0].data.push(parseFloat(data.temperature));
-                    dhtLineChart.data.datasets[1].data.push(parseFloat(data.humidity));
+            const INTERVAL_MENIT = 15;
+            const INTERVAL_MS = INTERVAL_MENIT * 60 * 1000;
+            const groupedData = {};
+
+            snapshot.forEach((child) => {
+                const d = child.val();
+                if (d.timestamp && d.temperature && d.humidity) {
+                    const key = Math.floor(d.timestamp / INTERVAL_MS) * INTERVAL_MS;
+                    if (!groupedData[key]) {
+                        groupedData[key] = { temps: [], hums: [], count: 0 };
+                    }
+                    groupedData[key].temps.push(parseFloat(d.temperature));
+                    groupedData[key].hums.push(parseFloat(d.humidity));
+                    groupedData[key].count++;
                 }
             });
-        } else {
-            console.log("Tidak ada data historis untuk tanggal ini.");
+
+            const sortedKeys = Object.keys(groupedData).sort((a, b) => a - b);
+            sortedKeys.forEach(k => {
+                const g = groupedData[k];
+                const ts = new Date(parseInt(k));
+                const avgT = g.temps.reduce((a, b) => a + b, 0) / g.count;
+                const avgH = g.hums.reduce((a, b) => a + b, 0) / g.count;
+
+                dhtLineChart.data.labels.push(ts);
+                dhtLineChart.data.datasets[0].data.push(avgT);
+                dhtLineChart.data.datasets[1].data.push(avgH);
+            });
         }
-        
+
         chartLoading.classList.add('d-none');
         dhtLineChart.canvas.style.display = 'block';
-        
         dhtLineChart.options.scales.x.time.unit = 'hour';
-        dhtLineChart.options.scales.x.time.displayFormats.hour = 'HH:mm';
-        
         dhtLineChart.update();
+        updateChartAnnotations();
     }).catch((error) => {
-        console.error("Error mengambil data historis:", error);
+        console.error("Error historis:", error);
         chartLoading.classList.add('d-none');
     });
 }
 
-// 6. Fungsi Reset Chart (Tidak Berubah)
-function resetToRealtime() { /* ... (Kode sama persis) ... */ 
-    console.log("Reset ke mode real-time.");
-    if (realtimeListener) return; 
+// --- Reset ke Real-time ---
+function resetToRealtime() {
+    if (realtimeListener) return;
 
     datePicker.value = '';
-    
     dhtLineChart.data.labels = [];
     dhtLineChart.data.datasets[0].data = [];
     dhtLineChart.data.datasets[1].data = [];
-    
     dhtLineChart.options.scales.x.time.unit = 'second';
-    dhtLineChart.options.scales.x.time.displayFormats.second = 'HH:mm:ss';
-    
     dhtLineChart.update();
-
     startRealtimeListener();
 }
 
-// 7. --- FUNGSI BARU: Export Data ke CSV ---
+// --- Export ke CSV ---
 function exportDataToCSV() {
-    console.log("Mengekspor data ke CSV...");
-
     const labels = dhtLineChart.data.labels;
-    const tempData = dhtLineChart.data.datasets[0].data;
-    const humData = dhtLineChart.data.datasets[1].data;
+    const temps = dhtLineChart.data.datasets[0].data;
+    const hums = dhtLineChart.data.datasets[1].data;
 
     if (labels.length === 0) {
-        alert("Tidak ada data di chart untuk diekspor.");
+        alert("Tidak ada data untuk diekspor.");
         return;
     }
 
-    // Buat Header CSV
-    let csvContent = "Timestamp,Suhu (°C),Kelembaban (%)\n";
-
-    // Loop data untuk membuat baris
+    let csv = "Timestamp,Suhu (°C),Kelembaban (%)\n";
     for (let i = 0; i < labels.length; i++) {
-        // Format timestamp agar bisa dibaca Excel (misal: "24/10/2025 00:51:58")
-        const timestamp = new Date(labels[i]).toLocaleString('id-ID');
-        const temp = tempData[i];
-        const hum = humData[i];
-        
-        csvContent += `"${timestamp}",${temp},${hum}\n`;
+        const ts = new Date(labels[i]).toLocaleString('id-ID');
+        csv += `"${ts}",${temps[i]},${hums[i]}\n`;
     }
 
-    // Tentukan nama file
-    // Jika mode historis, gunakan tanggal. Jika real-time, gunakan "realtime"
-    let fileName;
-    if (datePicker.value) {
-        fileName = `export_dht11_${datePicker.value}.csv`;
-    } else {
-        const today = new Date().toISOString().split('T')[0];
-        fileName = `export_dht11_realtime_${today}.csv`;
-    }
+    const fileName = datePicker.value 
+        ? `dht11_${datePicker.value}.csv`
+        : `dht11_realtime_${new Date().toISOString().split('T')[0]}.csv`;
 
-    // Panggil fungsi download
-    downloadCSV(csvContent, fileName);
-}
-
-// 8. --- FUNGSI BARU: Helper untuk Memicu Download ---
-function downloadCSV(csvContent, fileName) {
-    // Buat 'Blob' (objek data) dari string CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-    // Buat link <a> virtual
-    const link = document.createElement("a");
-    
-    // Buat URL untuk blob
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    
-    // Sembunyikan link dan tambahkan ke body
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    
-    // "Klik" link secara otomatis untuk memulai download
-    link.click();
-    
-    // Hapus link dari body
-    document.body.removeChild(link);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
